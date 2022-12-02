@@ -76,33 +76,41 @@ class handDetector():
 
 
 def readInput(lmListLeft, lmListRight, keyboard, gamepad, img):
-
+    # Get Scalar based on right hand
+    valy = lmListRight[5][2] - lmListRight[17][2]
+    valx = lmListRight[5][1] - lmListRight[17][1]
+    rightScaler = math.sqrt((valy**2) + (valx**2))
+    
+    valy = lmListLeft[5][2] - lmListLeft[17][2]
+    valx = lmListLeft[5][1] - lmListLeft[17][1]
+    leftScaler = math.sqrt((valy**2) + (valx**2))
+    
     # Check Steering
     val = lmListLeft[5][2] - lmListRight[5][2]
     analog = 50
 
-    if val < -150:
+    if val < -50:
         # keyboard.release('f')
         # keyboard.press('g')
 
         if (val < -250):
             val = -250
-        analog = (val + 150) * -1
-        for i in range(analog):
+        analog = int(((val + 50) * -1)/2)
+        for i in range(analog * 2):
             cv2.putText(img, str("."), (10 + i, 200),
-                        cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 3)
+                        cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
         analog = float((analog/100))
         gamepad.left_joystick_float(x_value_float=analog, y_value_float=0.0)
         gamepad.update()
 
-    elif val > 150:
+    elif val > 50:
 
         if (val > 250):
             val = 250
-        analog = (val - 150)
-        for i in range(analog):
-            cv2.putText(img, str("."), (10 + i, 240),
-                        cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
+        analog = int(((val - 50)/2))
+        for i in range(analog * 2):
+            cv2.putText(img, str("."), (10 + i, 200),
+                        cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 3)
             
         analog = float((analog/100) * -1)
 
@@ -118,24 +126,28 @@ def readInput(lmListLeft, lmListRight, keyboard, gamepad, img):
     valy = lmListLeft[6][2] - lmListLeft[4][2]
     valx = lmListLeft[6][1] - lmListLeft[4][1]
     val = math.sqrt((valy**2) + (valx**2))
-    if val < 60:
+    val = (val * 100)/leftScaler
+    print(val)
+    
+    if val < 70:
         # keyboard.press('b')
         gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_B)
         gamepad.update()
-        cv2.putText(img, str("b"), (10, 160),
+        cv2.putText(img, str("b"), (50, 120),
                     cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
     else:
         # keyboard.release('b')
         gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_B)
         gamepad.update()
-        cv2.putText(img, str("b"), (10, 160),
+        cv2.putText(img, str("b"), (50, 120),
                     cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 3)
 
     # Check A button (Right hand thumb)
     valy = lmListRight[6][2] - lmListRight[4][2]
     valx = lmListRight[6][1] - lmListRight[4][1]
     val = math.sqrt((valy**2) + (valx**2))
-    if val < 60:
+    val = (val * 100)/rightScaler
+    if val < 70:
         # keyboard.press('a')
         gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_A)
         gamepad.update()
@@ -148,8 +160,21 @@ def readInput(lmListLeft, lmListRight, keyboard, gamepad, img):
         cv2.putText(img, str("a"), (10, 120),
                     cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 3)
 
-    # print(lmList[6][2] - lmList[4][2])
-
+    # Check X button (hand nuckles together)
+    valx = lmListRight[10][1] - lmListLeft[10][1]
+    valy = lmListRight[10][2] - lmListLeft[10][2]
+    val = math.sqrt((valy**2) + (valx**2))
+    val = (val * 100)/rightScaler
+    if val < 70:
+        gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_X)
+        gamepad.update()
+        cv2.putText(img, str("super"), (10, 160),
+                    cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
+    else:
+        gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_X)
+        gamepad.update()
+        cv2.putText(img, str("super"), (10, 160),
+                    cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 3)
 
 def main():
 

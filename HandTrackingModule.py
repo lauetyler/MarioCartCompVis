@@ -90,8 +90,8 @@ def readRightHand(lmListRight, keyboard, gamepad, img, cTime):
     # Get total distance between fingers start and fingers end
 
     # Thumb distace
-    valx = (lmListRight[1][1] - lmListRight[4][1])/rightScaler
-    valy = (lmListRight[1][2] - lmListRight[4][2])/rightScaler
+    valx = (lmListRight[6][1] - lmListRight[4][1])/rightScaler
+    valy = (lmListRight[6][2] - lmListRight[4][2])/rightScaler
     thumb = int(100 * math.sqrt((valy**2) + (valx**2)))
 
     # Pointer distance
@@ -124,7 +124,7 @@ def readRightHand(lmListRight, keyboard, gamepad, img, cTime):
 
 
     total = thumb + pointer + middle + ring + pinky
-    
+    totalWOThumb = pointer + middle + ring + pinky
 
 
     # Check Right Index finger for D-Pad
@@ -137,52 +137,70 @@ def readRightHand(lmListRight, keyboard, gamepad, img, cTime):
     intval = int(val)
 
    
-    if total < 280:
-        if cTime - pastInTime > 0.5:
+    if total < 180:
+        if cTime - pastInTime > 0.8:
             gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_A)
             gamepad.update()
             cv2.putText(img, str("a"), (10, 120),
                         cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
             print("A")
             pastInTime = cTime
-
+    elif totalWOThumb < 150: 
+        if cTime - pastInTime > 0.8:
+            if thumb > 130:
+                gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                gamepad.update()
+                cv2.putText(img, str("b"), (50, 120),
+                            cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
+                print("B")
+                pastInTime = cTime
+            # print("other fingers: ", totalWOThumb)
+            # print("thumb: ", thumb)
     elif inty < -120:
-        if cTime - pastInTime > 0.5:
+        if cTime - pastInTime > 0.8:
             print("Up")
             gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
             gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN)
             gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT)
             gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_A)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_B)
             gamepad.update()
             pastInTime = cTime
 
     elif inty > 90:
-        if cTime - pastInTime > 0.5:
+        if cTime - pastInTime > 0.8:
             print("Down")
             gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN)
             gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
             gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT)
             gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_A)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_B)
             gamepad.update()
             pastInTime = cTime
 
     elif intx < -130: 
-        if cTime - pastInTime > 0.5:
+        if cTime - pastInTime > 0.8:
             print("Left")
             gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT)
             gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
             gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN)
             gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_A)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_B)
             gamepad.update()
             pastInTime = cTime
 
     elif intx > 80: 
-        if cTime - pastInTime > 0.5:
+        if cTime - pastInTime > 0.8:
             print("Right")
             gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT)
             gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
             gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN)
             gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_A)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_B)
             gamepad.update()
             pastInTime = cTime
 
@@ -191,6 +209,8 @@ def readRightHand(lmListRight, keyboard, gamepad, img, cTime):
         gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN)
         gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT)
         gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT)
+        gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_A)
+        gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_B)
         gamepad.update()
 
 
@@ -272,7 +292,6 @@ def readBothHands(lmListLeft, lmListRight, keyboard, gamepad, img):
     # print(val)
 
     if val < 70:
-
         if aPressed:
             gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_Y)
             gamepad.update()

@@ -74,74 +74,176 @@ class handDetector():
 
         return lmListLeft, lmListRight
 
+pastInTime = 0
 
-def readInput(lmListLeft, lmListRight, keyboard, gamepad, img):
+def readRightHand(lmListRight, keyboard, gamepad, img, cTime):
+
     # Get Scalar based on right hand
     valy = lmListRight[5][2] - lmListRight[17][2]
     valx = lmListRight[5][1] - lmListRight[17][1]
     rightScaler = math.sqrt((valy**2) + (valx**2))
+
+    if rightScaler == 0:
+        return
     
+    total = 0
+    # Get total distance between fingers start and fingers end
+
+    # Thumb distace
+    valx = (lmListRight[1][1] - lmListRight[4][1])/rightScaler
+    valy = (lmListRight[1][2] - lmListRight[4][2])/rightScaler
+    thumb = int(100 * math.sqrt((valy**2) + (valx**2)))
+
+    # Pointer distance
+    valx = (lmListRight[5][1] - lmListRight[8][1])/rightScaler
+    valy = (lmListRight[5][2] - lmListRight[8][2])/rightScaler
+    pointer = int(100 * math.sqrt((valy**2) + (valx**2)))
+
+    # Middle Finger
+    valx = (lmListRight[9][1] - lmListRight[12][1])/rightScaler
+    valy = (lmListRight[9][2] - lmListRight[12][2])/rightScaler
+    middle = int(100 * math.sqrt((valy**2) + (valx**2)))
+
+    # Ring Finger
+    valx = (lmListRight[16][1] - lmListRight[13][1])/rightScaler
+    valy = (lmListRight[16][2] - lmListRight[13][2])/rightScaler
+    ring = int(100 * math.sqrt((valy**2) + (valx**2)))
+
+    # Pinky
+    valx = (lmListRight[20][1] - lmListRight[17][1])/rightScaler
+    valy = (lmListRight[20][2] - lmListRight[17][2])/rightScaler
+    pinky = int(100 * math.sqrt((valy**2) + (valx**2)))
+    
+    global pastInTime 
+    if cTime - pastInTime > 0.1:
+        gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
+        gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN)
+        gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT)
+        gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT)
+        gamepad.update()
+
+
+    total = thumb + pointer + middle + ring + pinky
+    
+
+
+    # Check Right Index finger for D-Pad
+    valx = (lmListRight[8][1] - lmListRight[5][1])/rightScaler
+    valy = (lmListRight[8][2] - lmListRight[5][2])/rightScaler
+    val = math.sqrt((valy**2) + (valx**2))
+
+    intx = int(valx * 100)
+    inty = int(valy * 100)
+    intval = int(val)
+
+   
+    if total < 280:
+        if cTime - pastInTime > 0.5:
+            gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_A)
+            gamepad.update()
+            cv2.putText(img, str("a"), (10, 120),
+                        cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
+            print("A")
+            pastInTime = cTime
+
+    elif inty < -120:
+        if cTime - pastInTime > 0.5:
+            print("Up")
+            gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT)
+            gamepad.update()
+            pastInTime = cTime
+
+    elif inty > 90:
+        if cTime - pastInTime > 0.5:
+            print("Down")
+            gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT)
+            gamepad.update()
+            pastInTime = cTime
+
+    elif intx < -130: 
+        if cTime - pastInTime > 0.5:
+            print("Left")
+            gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT)
+            gamepad.update()
+            pastInTime = cTime
+
+    elif intx > 80: 
+        if cTime - pastInTime > 0.5:
+            print("Right")
+            gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN)
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT)
+            gamepad.update()
+            pastInTime = cTime
+
+    else: 
+        gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
+        gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN)
+        gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT)
+        gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT)
+        gamepad.update()
+
+
+def readBothHands(lmListLeft, lmListRight, keyboard, gamepad, img):
+    # Get Scalar based on right hand
+    valy = lmListRight[5][2] - lmListRight[17][2]
+    valx = lmListRight[5][1] - lmListRight[17][1]
+    rightScaler = math.sqrt((valy**2) + (valx**2)) 
+
+    # Get Scalar based on left hand
     valy = lmListLeft[5][2] - lmListLeft[17][2]
     valx = lmListLeft[5][1] - lmListLeft[17][1]
     leftScaler = math.sqrt((valy**2) + (valx**2))
-    
+
+    if rightScaler == 0 or leftScaler == 0:
+        return
+
     # Check Steering
-    val = lmListLeft[5][2] - lmListRight[5][2]
-    analog = 50
+    valy = (lmListLeft[5][2] * leftScaler) - (lmListRight[5][2] * rightScaler)
+    valx = (lmListLeft[5][1] * leftScaler) - (lmListRight[5][1] * rightScaler)
 
-    if val < -50:
-        # keyboard.release('f')
-        # keyboard.press('g')
+    val = abs(math.atan(valy/valx) * (2/math.pi))
+    if (valy > 0):
+        val = val * -1
 
-        if (val < -250):
-            val = -250
-        analog = int(((val + 50) * -1)/2)
+    val = int(val * 100)
+
+    if val < 0:
+        analog = val * -1
         for i in range(analog * 2):
-            cv2.putText(img, str("."), (10 + i, 200),
+            cv2.putText(img, str("."), (10 + i, 220),
+                        cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 3)
+        analog = float((analog/100) * -1)
+        gamepad.left_joystick_float(x_value_float=analog, y_value_float=0.0)
+        gamepad.update()
+
+    elif val > 0:
+        if (val > 250):
+            val = 250
+        analog = val
+        for i in range(analog * 2):
+            cv2.putText(img, str("."), (10 + i, 220),
                         cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
+
         analog = float((analog/100))
         gamepad.left_joystick_float(x_value_float=analog, y_value_float=0.0)
         gamepad.update()
 
-    elif val > 50:
-
-        if (val > 250):
-            val = 250
-        analog = int(((val - 50)/2))
-        for i in range(analog * 2):
-            cv2.putText(img, str("."), (10 + i, 200),
-                        cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 3)
-            
-        analog = float((analog/100) * -1)
-
-        gamepad.left_joystick_float(x_value_float=analog, y_value_float=0.0)
-        gamepad.update()
-        
     else:
         gamepad.left_joystick_float(x_value_float=0.0, y_value_float=0.0)
         gamepad.update()
 
-
-    # Check B button (Left hand thumb)
-    valy = lmListLeft[6][2] - lmListLeft[4][2]
-    valx = lmListLeft[6][1] - lmListLeft[4][1]
-    val = math.sqrt((valy**2) + (valx**2))
-    val = (val * 100)/leftScaler
-    print(val)
-    
-    if val < 70:
-        # keyboard.press('b')
-        gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_B)
-        gamepad.update()
-        cv2.putText(img, str("b"), (50, 120),
-                    cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
-    else:
-        # keyboard.release('b')
-        gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_B)
-        gamepad.update()
-        cv2.putText(img, str("b"), (50, 120),
-                    cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 3)
-
+    aPressed = False
     # Check A button (Right hand thumb)
     valy = lmListRight[6][2] - lmListRight[4][2]
     valx = lmListRight[6][1] - lmListRight[4][1]
@@ -153,11 +255,56 @@ def readInput(lmListLeft, lmListRight, keyboard, gamepad, img):
         gamepad.update()
         cv2.putText(img, str("a"), (10, 120),
                     cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
+        aPressed = True
     else:
         # keyboard.release('a')
         gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_A)
         gamepad.update()
         cv2.putText(img, str("a"), (10, 120),
+                    cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 3)
+        aPressed = False
+
+    # Check B button (Left hand thumb)
+    valy = lmListLeft[6][2] - lmListLeft[4][2]
+    valx = lmListLeft[6][1] - lmListLeft[4][1]
+    val = math.sqrt((valy**2) + (valx**2))
+    val = (val * 100)/leftScaler
+    # print(val)
+
+    if val < 70:
+
+        if aPressed:
+            gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_Y)
+            gamepad.update()
+            cv2.putText(img, str("trick"), (10, 160),
+                        cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
+
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_B)
+            gamepad.update()
+            cv2.putText(img, str("b"), (50, 120),
+                        cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 3)
+
+        else:
+            # keyboard.press('b')
+            gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_B)
+            gamepad.update()
+            cv2.putText(img, str("b"), (50, 120),
+                        cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
+
+            gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_Y)
+            gamepad.update()
+            cv2.putText(img, str("trick"), (10, 160),
+                        cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 3)
+    else:
+        # keyboard.release('b')
+        gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_B)
+        gamepad.update()
+        cv2.putText(img, str("b"), (50, 120),
+                    cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 3)
+
+        gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_Y)
+        gamepad.update()
+        cv2.putText(img, str("trick"), (10, 160),
                     cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 3)
 
     # Check X button (hand nuckles together)
@@ -168,13 +315,14 @@ def readInput(lmListLeft, lmListRight, keyboard, gamepad, img):
     if val < 70:
         gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_X)
         gamepad.update()
-        cv2.putText(img, str("super"), (10, 160),
+        cv2.putText(img, str("super"), (10, 200),
                     cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
     else:
         gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_X)
         gamepad.update()
-        cv2.putText(img, str("super"), (10, 160),
+        cv2.putText(img, str("super"), (10, 200),
                     cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 3)
+
 
 def main():
 
@@ -196,7 +344,13 @@ def main():
             img, handsType, numHands)
 
         if len(lmListLeft) != 0 and len(lmListRight) != 0:
-            readInput(lmListLeft, lmListRight, keyboard, gamepad, img)
+            readBothHands(lmListLeft, lmListRight, keyboard, gamepad, img)
+        elif len(lmListRight) != 0 and len(lmListLeft) == 0:
+            readRightHand(lmListRight, keyboard, gamepad, img, cTime)
+        else:
+            gamepad.reset()
+            gamepad.update()
+
 
         # show FPS in top left
         cTime = time.time()

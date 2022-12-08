@@ -136,26 +136,35 @@ def readRightHand(lmListRight, keyboard, gamepad, img, cTime):
     inty = int(valy * 100)
     intval = int(val)
 
-   
-    if total < 180:
+    if totalWOThumb < 150: 
         if cTime - pastInTime > 0.8:
-            gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_A)
-            gamepad.update()
-            cv2.putText(img, str("a"), (10, 120),
-                        cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
-            print("A")
-            pastInTime = cTime
-    elif totalWOThumb < 150: 
-        if cTime - pastInTime > 0.8:
-            if thumb > 130:
+            # print(totalWOThumb)
+            # print(thumb)
+            if thumb > 80:
                 gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_B)
                 gamepad.update()
                 cv2.putText(img, str("b"), (50, 120),
                             cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
                 print("B")
                 pastInTime = cTime
+            elif total < 160:
+                gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_A)
+                gamepad.update()
+                cv2.putText(img, str("a"), (10, 120),
+                            cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
+                print("A")
+                pastInTime = cTime
             # print("other fingers: ", totalWOThumb)
             # print("thumb: ", thumb)
+    # elif total < 160:
+    #     if cTime - pastInTime > 0.8:
+    #         gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_A)
+    #         gamepad.update()
+    #         cv2.putText(img, str("a"), (10, 120),
+    #                     cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
+    #         print("A")
+    #         pastInTime = cTime
+    
     elif inty < -120:
         if cTime - pastInTime > 0.8:
             print("Up")
@@ -363,8 +372,12 @@ def main():
             img, handsType, numHands)
 
         if len(lmListLeft) != 0 and len(lmListRight) != 0:
+            gamepad.reset()
+            gamepad.update()
             readBothHands(lmListLeft, lmListRight, keyboard, gamepad, img)
         elif len(lmListRight) != 0 and len(lmListLeft) == 0:
+            gamepad.reset()
+            gamepad.update()
             readRightHand(lmListRight, keyboard, gamepad, img, cTime)
         else:
             gamepad.reset()

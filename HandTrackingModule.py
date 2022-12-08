@@ -76,6 +76,8 @@ class handDetector():
 
 pastInTime = 0
 
+
+#Function to read one hand for menu input
 def readRightHand(lmListRight, keyboard, gamepad, img, cTime):
 
     # Get Scalar based on right hand
@@ -114,7 +116,11 @@ def readRightHand(lmListRight, keyboard, gamepad, img, cTime):
     valy = (lmListRight[20][2] - lmListRight[17][2])/rightScaler
     pinky = int(100 * math.sqrt((valy**2) + (valx**2)))
     
+    #time variable
     global pastInTime 
+    
+
+    #periodically release d-pad input
     if cTime - pastInTime > 0.1:
         gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
         gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN)
@@ -136,10 +142,14 @@ def readRightHand(lmListRight, keyboard, gamepad, img, cTime):
     inty = int(valy * 100)
     intval = int(val)
 
+    #meaning, total without thumb
+    #so, our hand is in a fist position, and we are trying to press A or B
     if totalWOThumb < 150: 
         if cTime - pastInTime > 0.8:
             # print(totalWOThumb)
             # print(thumb)
+
+            #if thumb is extended, press B
             if thumb > 80:
                 gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_B)
                 gamepad.update()
@@ -147,6 +157,7 @@ def readRightHand(lmListRight, keyboard, gamepad, img, cTime):
                             cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 3)
                 print("B")
                 pastInTime = cTime
+            #if thumb is not extended, press A
             elif total < 160:
                 gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_A)
                 gamepad.update()
@@ -165,6 +176,12 @@ def readRightHand(lmListRight, keyboard, gamepad, img, cTime):
     #         print("A")
     #         pastInTime = cTime
     
+    #if we reach here, our hand is not in a fist position 
+    #and we are presumably trying to navigate the menu using the D-Pad
+    #Every "release_button" call is to ensure no continuing inputs from past gestures
+
+
+    #Pointing Up
     elif inty < -120:
         if cTime - pastInTime > 0.8:
             print("Up")
@@ -177,6 +194,7 @@ def readRightHand(lmListRight, keyboard, gamepad, img, cTime):
             gamepad.update()
             pastInTime = cTime
 
+    #Pointing Down
     elif inty > 90:
         if cTime - pastInTime > 0.8:
             print("Down")
@@ -189,6 +207,7 @@ def readRightHand(lmListRight, keyboard, gamepad, img, cTime):
             gamepad.update()
             pastInTime = cTime
 
+    #Pointing Left
     elif intx < -130: 
         if cTime - pastInTime > 0.8:
             print("Left")
@@ -201,6 +220,7 @@ def readRightHand(lmListRight, keyboard, gamepad, img, cTime):
             gamepad.update()
             pastInTime = cTime
 
+    #Pointing Right
     elif intx > 80: 
         if cTime - pastInTime > 0.8:
             print("Right")
@@ -213,6 +233,7 @@ def readRightHand(lmListRight, keyboard, gamepad, img, cTime):
             gamepad.update()
             pastInTime = cTime
 
+    #Neutral hand, make no inputs
     else: 
         gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
         gamepad.release_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN)
@@ -223,6 +244,7 @@ def readRightHand(lmListRight, keyboard, gamepad, img, cTime):
         gamepad.update()
 
 
+#Funcion to read both hands for driving inputs
 def readBothHands(lmListLeft, lmListRight, keyboard, gamepad, img):
     # Get Scalar based on right hand
     valy = lmListRight[5][2] - lmListRight[17][2]
@@ -247,6 +269,9 @@ def readBothHands(lmListLeft, lmListRight, keyboard, gamepad, img):
 
     val = int(val * 100)
 
+    #We need to convert our value to between -1 and 1, for our x360 controller's left stick
+
+    #Moving left on the analog stick
     if val < 0:
         analog = val * -1
         for i in range(analog * 2):
@@ -256,6 +281,7 @@ def readBothHands(lmListLeft, lmListRight, keyboard, gamepad, img):
         gamepad.left_joystick_float(x_value_float=analog, y_value_float=0.0)
         gamepad.update()
 
+    #Moving right on the analog stick
     elif val > 0:
         if (val > 250):
             val = 250
@@ -268,11 +294,13 @@ def readBothHands(lmListLeft, lmListRight, keyboard, gamepad, img):
         gamepad.left_joystick_float(x_value_float=analog, y_value_float=0.0)
         gamepad.update()
 
+    #Not steering
     else:
         gamepad.left_joystick_float(x_value_float=0.0, y_value_float=0.0)
         gamepad.update()
 
     aPressed = False
+
     # Check A button (Right hand thumb)
     valy = lmListRight[6][2] - lmListRight[4][2]
     valx = lmListRight[6][1] - lmListRight[4][1]
@@ -302,6 +330,9 @@ def readBothHands(lmListLeft, lmListRight, keyboard, gamepad, img):
 
     if val < 70:
         if aPressed:
+            #Here, we know that if a is pressed then our right thumb is down
+            #So, if the left the thumb also goes down, we are attempting to "trick", not brake
+
             gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_Y)
             gamepad.update()
             cv2.putText(img, str("trick"), (10, 160),
@@ -312,7 +343,9 @@ def readBothHands(lmListLeft, lmListRight, keyboard, gamepad, img):
             cv2.putText(img, str("b"), (50, 120),
                         cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 3)
 
+        
         else:
+            #But, if a is not pressed, then we are attempting to break
             # keyboard.press('b')
             gamepad.press_button(button=vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_B)
             gamepad.update()
@@ -335,7 +368,7 @@ def readBothHands(lmListLeft, lmListRight, keyboard, gamepad, img):
         cv2.putText(img, str("trick"), (10, 160),
                     cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 3)
 
-    # Check X button (hand nuckles together)
+    # Check X button (hand knuckles together)
     valx = lmListRight[10][1] - lmListLeft[10][1]
     valy = lmListRight[10][2] - lmListLeft[10][2]
     val = math.sqrt((valy**2) + (valx**2))
@@ -355,12 +388,16 @@ def readBothHands(lmListLeft, lmListRight, keyboard, gamepad, img):
 def main():
 
     keyboard = Controller()
+    #create our virtual x360 controller
     gamepad = vgamepad.VX360Gamepad()
 
     pTime = 0
     cTime = 0
+
+    #Prepare webcam and handdetector
     cap = cv2.VideoCapture(0)
     detector = handDetector()
+
     while True:
         success, img = cap.read()
         if img is None:
@@ -371,14 +408,19 @@ def main():
         lmListLeft, lmListRight = detector.findPosition(
             img, handsType, numHands)
 
+        #Driving, both hands
         if len(lmListLeft) != 0 and len(lmListRight) != 0:
             gamepad.reset()
             gamepad.update()
             readBothHands(lmListLeft, lmListRight, keyboard, gamepad, img)
+
+        #Menu, one hand
         elif len(lmListRight) != 0 and len(lmListLeft) == 0:
             gamepad.reset()
             gamepad.update()
             readRightHand(lmListRight, keyboard, gamepad, img, cTime)
+
+        #No hands
         else:
             gamepad.reset()
             gamepad.update()

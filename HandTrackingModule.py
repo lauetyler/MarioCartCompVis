@@ -20,6 +20,7 @@ class handDetector():
             self.mode, self.maxHands, 1, self.detectionConf, self.trackConf)
         self.mpDraw = mp.solutions.drawing_utils
 
+    #function to draw hands in image
     def findHands(self, img, draw=True):
         if img is None:
             return img
@@ -34,6 +35,7 @@ class handDetector():
 
         return img
 
+    #gets specific hand points
     def getHandLabels(self, img):
         handsType = []
         numHands = 0
@@ -44,15 +46,19 @@ class handDetector():
 
         return handsType, numHands
 
+    #function to return a list of points for both left hand and right
     def findPosition(self, img, handsType, numHands, draw=True):
         lmListLeft = []
         lmListRight = []
 
+        #if no hands are found
         if (numHands == 0):
             return lmListLeft, lmListRight
 
         if self.results.multi_hand_landmarks:
             for hand, handType in zip(self.results.multi_hand_landmarks, handsType):
+
+                #if right hand, draw green points
                 if (handType == "Right"):
                     for id, lm in enumerate(hand.landmark):
 
@@ -62,6 +68,8 @@ class handDetector():
                         if draw:
                             cv2.circle(img, (cx, cy), 7,
                                        (0, 255, 0), cv2.FILLED)
+
+                #if left hand, draw blue points
                 if (handType == "Left"):
                     for id, lm in enumerate(hand.landmark):
 
@@ -72,6 +80,7 @@ class handDetector():
                             cv2.circle(img, (cx, cy), 7,
                                        (255, 0, 0), cv2.FILLED)
 
+        #return updated lists of hand points
         return lmListLeft, lmListRight
 
 pastInTime = 0
